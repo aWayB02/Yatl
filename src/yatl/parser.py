@@ -153,4 +153,4 @@ def run_test(yaml_path):
 
 
 if __name__ == "__main__":
-    run_test("unit.test.yaml")
+    run_test("tests/unit.test.yaml")
