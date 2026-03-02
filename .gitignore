@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.ruff_cache/
+
+venv/
+env/
+ENV/
+
+*.db
+*.sqlite
+
+*.log
+
+*.tmp
+*.temp
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ОС
+.DS_Store
+Thumbs.db

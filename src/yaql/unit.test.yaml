@@ -1,0 +1,49 @@
+name: Создание и проверка пользователя
+base_url: http://127.0.0.1:8000/
+user_id_not_found: 1234567890
+
+steps:
+  - name: Создать пользователя
+    request:
+      method: POST
+      url: /users
+      json:
+        name: "Иван"
+        email: "ivan@example.com"
+    expect:
+      status: 200
+    extract:
+      user_id: null
+      token: null
+
+
+  - name: Получить пользователя
+    request:
+      method: GET
+      url: "/users/{{user_id}}"
+      timeout: 10
+    expect:
+      status: 200
+      json:
+        name: "Иван"
+        email: "ivan@example.com"
+
+
+  - name: Удалить существующего пользователя
+    request:
+      method: DELETE
+      url: "/users/{{user_id}}"
+    expect:
+      status: 200
+      json:
+        status: User deleted
+
+
+  - name: Удалить несуществующего пользователя
+    request:
+      method: DELETE
+      url: "/users/{{user_id_not_found}}"
+    expect:
+      status: 404
+      json:
+        detail: User not found
