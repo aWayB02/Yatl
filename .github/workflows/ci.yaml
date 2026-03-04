@@ -21,5 +21,11 @@ jobs:
       - name: run ruff format
         run: ruff format .
       
+      - name: install poetry
+        run: pip install poetry
+
+      - name: install dependencies
+        run: poetry install
+      
       - name: run tests
-        run: python3 src/yatl/parser.py
+        run: poetry run python3 src/yatl/parser.py
