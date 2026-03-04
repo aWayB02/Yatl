@@ -74,6 +74,7 @@ def run_step(step, context):
     headers = request_data.get("headers", {})
     json_body = request_data.get("json")
     params = request_data.get("params")
+    cookies = request_data.get("cookies")
 
     response = requests.request(
         method=method,
@@ -82,6 +83,7 @@ def run_step(step, context):
         json=json_body,
         params=params,
         timeout=timeout,
+        cookies=cookies,
     )
 
     if "expect" in resolved_step:
