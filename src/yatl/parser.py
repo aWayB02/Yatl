@@ -4,7 +4,7 @@ from render import TemplateRenderer
 from extractor import DataExtractor
 from validator import ResponseValidator
 import os
-from utils import search
+from utils import search_files
 from request_builder import RequestBuilder
 
 
@@ -53,6 +53,6 @@ def run_test(yaml_path: str):
 if __name__ == "__main__":
     path = os.getcwd()
     print("-" * 10)
-    for file in search(path, ".", []):
+    for file in search_files(path, ".", []):
         run_test(file)
         print("-" * 10)
