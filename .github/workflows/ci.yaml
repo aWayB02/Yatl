@@ -38,13 +38,11 @@ jobs:
         run: poetry install
 
       - name: run tests
-        working-directory: src/yatl
-        run: poetry run python3 parser.py tests/ping.test.yaml
+        run: poetry run src/yatl/python3 parser.py tests/ping.test.yaml
 
       - name: run server
         working-directory: src/yatl
         run: poetry run python3 server.py
       
       - name: run tests
-        working-directory: src/yatl
-        run: poetry run python3 parser.py tests/example.test.yaml
+        run: poetry run src/yatl/python3 parser.py tests/example.test.yaml
