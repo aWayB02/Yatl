@@ -42,7 +42,7 @@ jobs:
 
       - name: run server
         working-directory: src/yatl
-        run: poetry run python3 server.py
+        run: poetry run python3 test_server.py
       
       - name: run tests
         run: poetry run python3  src/yatl/parser.py tests/example.test.yaml
