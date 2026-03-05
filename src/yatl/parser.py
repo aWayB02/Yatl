@@ -3,9 +3,11 @@ import requests
 from render import TemplateRenderer
 from extractor import DataExtractor
 from validator import ResponseValidator
+import os
+from utils import search
 
 
-def run_step(step, context):
+def run_step(step, context: dict):
 
     template_render = TemplateRenderer()
     data_extractor = DataExtractor()
@@ -45,11 +47,11 @@ def run_step(step, context):
     return context
 
 
-def run_test(yaml_path):
+def run_test(yaml_path: str):
     with open(yaml_path, "r", encoding="utf-8") as f:
         test_spec = yaml.safe_load(f)
 
-    def create_context(test_spec):
+    def create_context(test_spec: dict):
         context = {}
         for k, v in test_spec.items():
             if k == "steps":
@@ -69,10 +71,8 @@ def run_test(yaml_path):
 
 
 if __name__ == "__main__":
-    import sys
-
-    if len(sys.argv) > 1:
-        yaml_path = sys.argv[1]
-    else:
-        yaml_path = "tests/example.test.yaml"
-    run_test(yaml_path)
+    path = os.getcwd()
+    print("-" * 10)
+    for file in search(path, ".", []):
+        run_test(file)
+        print("-" * 10)
