@@ -3,7 +3,6 @@ import requests
 from render import TemplateRenderer
 from extractor import DataExtractor
 from validator import ResponseValidator
-import json
 
 
 def run_step(step, context):
