@@ -17,7 +17,7 @@ The test file should contain the following fields:
 ```yaml
 - name: the name of the test
   base_url: the base url to be used
-  variables: the variables to be used in the test
+  variables: the global variables to be used in the test
 - steps: a list of steps to be executed
     - name: the name of the step
       request: the request to be made
@@ -51,11 +51,5 @@ steps:
 To run the test, use the following command:
 
 ```bash
-yatl run example.test.yaml
-```
-
-To run all tests in a directory, use the following command:
-
-```bash
-yatl run tests/
+make run_tests
 ```

@@ -1,4 +1,3 @@
-from render import TemplateRenderer
 
 
 class RequestBuilder:
