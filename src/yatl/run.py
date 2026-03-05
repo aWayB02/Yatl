@@ -1,5 +1,4 @@
 import os
-from utils import search_files
 from step_executor import StepExecutor
 from extractor import DataExtractor
 from render import TemplateRenderer
@@ -39,9 +38,22 @@ class Runner:
 
         print("Test has been completed")
 
+    def _search_files(self, current_path: str, item: str, files: list):
+        full_path = os.path.join(current_path, item)
+        if os.path.isfile(full_path) and (
+            item.endswith(".test.yaml") or item.endswith(".test.yml")
+        ):
+            files.append(full_path)
+            return
+        elif os.path.isdir(full_path):
+            for i in os.listdir(full_path):
+                self._search_files(full_path, i, files)
+        return files
+
     def run_all_tests(self):
         print("-" * 10)
-        for file in search_files(os.getcwd(), ".", []):
+        files = self._search_files(os.getcwd(), ".", [])
+        for file in files:
             self.run_test(file)
             print("-" * 10)
 
