@@ -1,31 +1,8 @@
 import yaml
 import requests
-import json
 from render import TemplateRenderer
 from extractor import DataExtractor
-
-
-def check_expectations(response, expect_spec):
-    expected_status = expect_spec.get("status")
-    if expected_status is not None and response.status_code != expected_status:
-        raise AssertionError(
-            f"Expected status {expected_status}, got {response.status_code}"
-        )
-
-    expected_json = expect_spec.get("json")
-    if expected_json is not None:
-        try:
-            resp_json = response.json()
-        except json.JSONDecodeError:
-            raise AssertionError("Response is not JSON, but JSON was expected")
-
-        for key, value in expected_json.items():
-            if key not in resp_json:
-                raise AssertionError(f"Key '{key}' is missing in response")
-            if resp_json[key] != value:
-                raise AssertionError(
-                    f"For key '{key}' expected '{value}', got '{resp_json[key]}'"
-                )
+from validator import ResponseValidator
 
 
 def run_step(step, context):
@@ -58,7 +35,8 @@ def run_step(step, context):
     )
 
     if "expect" in resolved_step:
-        check_expectations(response, resolved_step["expect"])
+        validator = ResponseValidator(response, resolved_step["expect"])
+        validator.check_expectations()
 
     if "extract" in resolved_step:
         extracted = data_extractor.extract(response, resolved_step["extract"])

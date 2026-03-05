@@ -1,5 +1,5 @@
 check:
-	poetry run ruff check .
+	poetry run ruff check . --fix
 
 format:
 	poetry run ruff format .
