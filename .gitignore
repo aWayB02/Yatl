@@ -24,4 +24,4 @@ ENV/
 Thumbs.db
 
 
-.example.test.yaml
+tests/example.test.yaml
