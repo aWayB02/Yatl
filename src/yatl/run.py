@@ -21,10 +21,13 @@ class Runner:
             k: v for k, v in takewhile(lambda x: x[0] != "steps", test_spec.items())
         }
 
-    def run_test(self, yaml_path: str):
+    def _load_test(self, yaml_path: str):
         with open(yaml_path, "r", encoding="utf-8") as f:
-            test_spec: dict = yaml.safe_load(f)
+            return yaml.safe_load(f)
 
+    def run_test(self, yaml_path: str):
+
+        test_spec = self._load_test(yaml_path)
         context = self._create_context(test_spec)
 
         print(f"Run test: {test_spec.get('name', '')}")
