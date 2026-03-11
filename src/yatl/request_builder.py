@@ -1,12 +1,3 @@
-class HttpMessage:
-    def __init__(self, headers: dict, content_type: str = None):
-        self.headers = headers or {}
-        self.content_type = content_type or "application/json"
-
-    def get_content_type(self) -> str:
-        return self.headers.get("Content-Type", "application/json")
-
-
 class RequestBuilder:
     def __init__(self, context: dict, resolved_step: dict):
         self.context = context
