@@ -24,3 +24,15 @@
 #         name: test
 #         info:
 #           email: test@test.com
+
+# - name: check headers
+#   request:
+#     method: GET
+#     url: /hello
+#     headers:
+#       theme: dark
+#   expect:
+#     status: 200
+#     body:
+#       json:
+#         theme: dark

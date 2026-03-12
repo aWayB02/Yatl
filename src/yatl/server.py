@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Response, Request
 from pydantic import BaseModel
 from uvicorn import run
 from typing import Dict
@@ -52,6 +52,15 @@ def get_text():
 @app.post("/text")
 def post_text(request: dict):
     return Response(content="Received: " + str(request), media_type="text/plain")
+
+
+@app.get("/hello")
+def hello(request: Request):
+    headers = request.headers
+    if headers["theme"] == "dark":
+        return {"theme": "dark"}
+    else:
+        return {"theme": "white"}
 
 
 if __name__ == "__main__":
