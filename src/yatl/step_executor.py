@@ -3,6 +3,7 @@ from .extractor import DataExtractor
 from .validator import ResponseValidator
 from .request_builder import RequestBuilder
 import requests
+from typing import Any, Dict
 
 
 class StepExecutor:
@@ -14,15 +15,17 @@ class StepExecutor:
         self.data_extractor = data_extractor
         self.template_renderer = template_renderer
 
-    def create_request(self, context, resolved_step):
-        self.request_builder = RequestBuilder(context, resolved_step)
-        data = self.request_builder.build()
+    def _create_request(
+        self, context: Dict[str, Any], resolved_step: Dict[str, Any]
+    ) -> requests.Response:
+        request_builder = RequestBuilder(context, resolved_step)
+        data = request_builder.build_request_data()
         response = requests.request(**data)
         return response
 
-    def run_step(self, step: str, context: dict):
+    def run_step(self, step: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
         resolved_step = self.template_renderer.render_data(step, context)
-        response = self.create_request(context, resolved_step)
+        response = self._create_request(context, resolved_step)
 
         if "expect" in resolved_step:
             validator = ResponseValidator(response, resolved_step["expect"])

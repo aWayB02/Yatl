@@ -1,0 +1,56 @@
+name: XML and Text endpoints test
+base_url: http://localhost:8000
+
+steps:
+  - name: Get XML
+    request:
+      method: GET
+      url: /xml
+    expect:
+      status: 200
+      headers:
+        content-type: application/xml
+      body:
+        xml:
+          "/note/to": "User"
+          "/note/from": "YATL"
+
+  - name: Post XML (echo)
+    request:
+      method: POST
+      url: /xml
+      body:
+        json:
+          test: "data"
+    expect:
+      status: 200
+      headers:
+        content-type: application/xml
+      body:
+        xml:
+          "/note/body": "Don't forget the meeting!"
+
+  - name: Get plain text
+    request:
+      method: GET
+      url: /text
+    expect:
+      status: 200
+      headers:
+        content-type: text/plain
+      body:
+        text: "Hello, this is plain text response."
+
+  - name: Post plain text
+    request:
+      method: POST
+      url: /text
+      body:
+        json:
+          message: "hello"
+    expect:
+      status: 200
+      headers:
+        content-type: text/plain
+      body:
+        text: "Received:"
