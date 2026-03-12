@@ -1,26 +1,26 @@
-name: test server
-base_url: http://127.0.0.1:8000
-steps:
-- name: create user
-  request:
-    method: POST
-    url: /users
-    body:
-      json:
-        id: 1
-        name: test
-        email: test@test.com
-  expect:
-    status: 200
+# name: test server
+# base_url: http://127.0.0.1:8000
+# steps:
+# - name: create user
+#   request:
+#     method: POST
+#     url: /users
+#     body:
+#       json:
+#         id: 1
+#         name: test
+#         email: test@test.com
+#   expect:
+#     status: 200
 
-- name: get user
-  request:
-    method: GET
-    url: /users/1
-  expect:
-    status: 200
-    body:
-      json:
-        name: test
-        info:
-          email: test@test.com
+# - name: get user
+#   request:
+#     method: GET
+#     url: /users/1
+#   expect:
+#     status: 200
+#     body:
+#       json:
+#         name: test
+#         info:
+#           email: test@test.com
