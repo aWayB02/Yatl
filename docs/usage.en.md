@@ -22,6 +22,7 @@ A YATL test file is a YAML document with the following top-level keys:
 
 - `name` (optional): Descriptive name of the test suite.
 - `base_url` (optional): Base URL for all requests in the test.
+- `skip` (optional): If set to `true`, the entire test will be skipped during execution.
 - `steps`: List of test steps, each representing an HTTP request and its assertions.
 
 Example:
@@ -42,6 +43,43 @@ steps:
           email: john@example.com
     expect:
       status: 200
+```
+
+You can skip a test entirely by setting `skip: true` at the top level. This is useful for temporarily disabling a test without deleting it.
+
+Example:
+
+```yaml
+name: Skipped Test
+base_url: http://localhost:8000
+skip: true
+
+steps:
+  - name: This step will not be executed
+    request:
+      method: GET
+      url: /ping
+```
+
+Individual steps can also be skipped by adding `skip: true` inside the step. Such a step will be ignored and the context will not be updated.
+
+Example:
+
+```yaml
+steps:
+  - name: Active step
+    request:
+      method: GET
+      url: /api/health
+  - name: Skipped step
+    skip: true
+    request:
+      method: POST
+      url: /api/data
+  - name: Next step
+    request:
+      method: GET
+      url: /api/status
 ```
 
 ## HTTP Request Specification

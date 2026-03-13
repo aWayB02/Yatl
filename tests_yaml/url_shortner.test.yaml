@@ -1,6 +1,7 @@
 name: test clck.ru
-skip: true
 base_url: https://clck.ru
+skip: false
+
 steps:
 - name: test clck.ru
   request:

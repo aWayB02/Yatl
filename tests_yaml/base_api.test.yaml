@@ -1,6 +1,7 @@
 name: test server
 base_url: http://127.0.0.1:8000
 skip: true
+
 steps:
 - name: create user
   request:
@@ -11,10 +12,6 @@ steps:
         id: 1
         name: test
         email: test@test.com
-  extract:
-    json:
-      message: User created
-      user_id: 1
   expect:
     status: 200
 
@@ -22,7 +19,7 @@ steps:
 - name: get user
   request:
     method: GET
-    url: /users/{{ user_id }}
+    url: /users/1
   expect:
     status: 200
     body:
@@ -32,14 +29,15 @@ steps:
           email: test@test.com
 
 
-# - name: check headers
-#   request:
-#     method: GET
-#     url: /hello
-#     headers:
-#       theme: dark
-#   expect:
-#     status: 200
-#     body:
-#       json:
-#         theme: dark
+- name: check headers
+  skip: true
+  request:
+    method: GET
+    url: /hello
+    headers:
+      theme: dark
+  expect:
+    status: 200
+    body:
+      json:
+        theme: dark

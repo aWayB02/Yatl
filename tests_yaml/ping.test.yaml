@@ -1,6 +1,6 @@
 name: ping
-skip: true
 base_url: https://yandex.ru
+skip: false
 
 steps:
 - name: ok_test

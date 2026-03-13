@@ -4,8 +4,8 @@ check:
 format:
 	poetry run ruff format .
 
-run_server:
-	poetry run python src/yatl/server.py
+server:
+	poetry run python src/yatl/base_api.py
 
 run_yaml:
 	poetry run python -m src.yatl.run
