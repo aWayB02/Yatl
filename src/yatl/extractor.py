@@ -29,8 +29,32 @@ class DataExtractor:
         ct = response.headers.get("content-type", "")
         return ct.split(";")[0].strip().lower()
 
+    def _get_nested_value(self, data: Any, path: str) -> Any:
+        """Retrieve a value from a nested dict using dot notation.
+
+        Args:
+            data: A dictionary (or list) containing the data.
+            path: A dot-separated string representing the path (e.g., "user.email").
+
+        Returns:
+            The value at the given path.
+
+        Raises:
+            ValueError: If any component of the path does not exist.
+        """
+        keys = path.split(".")
+        current = data
+        for key in keys:
+            if isinstance(current, dict) and key in current:
+                current = current[key]
+            else:
+                raise ValueError(f"Path component '{key}' not found in {current}")
+        return current
+
     def _extract_json(
-        self, response: Response, extract_spec: Dict[str, Any]
+        self,
+        response: Response,
+        extract_spec: Dict[str, Any],
     ) -> Dict[str, Any]:
         """Extracts fields from a JSON response according to the specification.
 
@@ -38,8 +62,7 @@ class DataExtractor:
             response: The HTTP response containing JSON data.
             extract_spec: A dictionary mapping output keys to JSON paths.
                 If a path is None, the key is used as a direct field name.
-                Currently supports only top-level or nested dict keys (dot notation
-                not yet implemented).
+                Supports dot notation for nested fields (e.g., "user.email").
 
         Returns:
             A dictionary with the extracted values.
@@ -56,17 +79,17 @@ class DataExtractor:
 
         for key, path in extract_spec.items():
             if path is None:
+                # Use key as direct field name
                 if key in data:
                     extracted[key] = data[key]
                 else:
                     raise ValueError(f"Field '{key}' not found in JSON response")
             else:
-                # Simple dot notation? For now assume nested dict key
-                # TODO: implement JSONPath
-                if isinstance(data, dict) and path in data:
-                    extracted[key] = data[path]
-                else:
-                    raise ValueError(f"Failed to extract '{key}' at path '{path}'")
+                # Path may be a dot‑notation string
+                try:
+                    extracted[key] = self._get_nested_value(data, path)
+                except ValueError as e:
+                    raise ValueError(f"Failed to extract '{key}' at path '{path}': {e}")
         return extracted
 
     def _extract_xml(
@@ -128,11 +151,13 @@ class DataExtractor:
         text = response.text
         for key, pattern in extract_spec.items():
             if pattern is None:
-                # Treat pattern as literal substring
-                if pattern in text:
-                    extracted[key] = pattern
-                else:
-                    raise ValueError(f"Pattern '{pattern}' not found in text")
+                # Treat pattern as literal substring – but None cannot be searched.
+                # This case is ambiguous; we treat it as "extract the key itself"?
+                # For backward compatibility, we raise an error.
+                raise ValueError(
+                    "Pattern cannot be None for text extraction. "
+                    "Provide a literal string or regex."
+                )
             else:
                 # Use regex
                 match = re.search(pattern, text)
@@ -141,6 +166,37 @@ class DataExtractor:
                 else:
                     raise ValueError(f"Regex '{pattern}' not found in text")
         return extracted
+
+    def _detect_format(self, response: Response) -> str:
+        """Try to guess the response format based on content.
+
+        Returns:
+            One of 'json', 'xml', 'text', or 'unknown'.
+        """
+        content_type = self._content_type(response)
+        if "json" in content_type:
+            return "json"
+        if "xml" in content_type:
+            return "xml"
+        if "text/plain" in content_type or "text/html" in content_type:
+            return "text"
+
+        # No clear header – attempt to parse as JSON
+        try:
+            response.json()
+            return "json"
+        except json.JSONDecodeError:
+            pass
+
+        # Attempt to parse as XML
+        try:
+            etree.fromstring(response.content)
+            return "xml"
+        except etree.XMLSyntaxError:
+            pass
+
+        # Fallback to text
+        return "text"
 
     def extract(
         self, response: Response, extract_spec: Dict[str, Any]
@@ -163,17 +219,13 @@ class DataExtractor:
             ValueError: If the content type is unsupported and the fallback JSON
                 extraction also fails.
         """
-        content_type = self._content_type(response)
+        fmt = self._detect_format(response)
 
-        if "json" in content_type:
+        if fmt == "json":
             return self._extract_json(response, extract_spec)
-        elif "xml" in content_type:
+        elif fmt == "xml":
             return self._extract_xml(response, extract_spec)
-        elif "text/plain" in content_type or "text/html" in content_type:
+        elif fmt == "text":
             return self._extract_text(response, extract_spec)
         else:
-            # Fallback to trying JSON if possible
-            try:
-                return self._extract_json(response, extract_spec)
-            except ValueError:
-                raise ValueError(f"Unsupported content-type: {content_type}")
+            raise ValueError("Unsupported response format")

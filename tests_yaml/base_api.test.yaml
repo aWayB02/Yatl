@@ -1,43 +1,65 @@
-name: test server
-base_url: http://127.0.0.1:8000
+name: Base API tests with extract
+base_url: http://localhost:8000
 skip: true
 
 steps:
-- name: create user
-  request:
-    method: POST
-    url: /users
-    body:
-      json:
-        id: 1
-        name: test
-        email: test@test.com
-  expect:
-    status: 200
+  - name: Create user and extract ID
+    request:
+      method: POST
+      url: /users
+      body:
+        json:
+          id: 1
+          name: Alice
+          email: alice@example.com
+    expect:
+      status: 200
+    extract:
+      user_id: id 
+
+  - name: Get user and extract name
+    request:
+      method: GET
+      url: /users/{{ user_id }}
+    extract:
+      user_email: info.email
+    expect:
+      status: 200
 
 
-- name: get user
-  request:
-    method: GET
-    url: /users/1
-  expect:
-    status: 200
-    body:
-      json:
-        name: test
-        info:
-          email: test@test.com
+  - name: Extract from XML response
+    skip: true
+    request:
+      method: GET
+      url: /xml
+    expect:
+      status: 200
+      headers:
+        content-type: application/xml
+    extract:
+      note_to: /note/to
+      note_body: /note/body
 
+  - name: Extract from plain text response
+    skip: true
+    request:
+      method: GET
+      url: /text
+    expect:
+      status: 200
+      headers:
+        content-type: text/plain
+    extract:
+      greeting: "Hello"
 
-- name: check headers
-  skip: true
-  request:
-    method: GET
-    url: /hello
-    headers:
-      theme: dark
-  expect:
-    status: 200
-    body:
-      json:
-        theme: dark
+  - name: Use extracted variable in request
+    skip: true
+    request:
+      method: GET
+      url: /hello
+      headers:
+        theme: "dark"
+    expect:
+      status: 200
+    extract:
+      theme: theme

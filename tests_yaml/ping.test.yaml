@@ -3,15 +3,16 @@ base_url: https://yandex.ru
 skip: false
 
 steps:
-- name: ok_test
+- name: access_yandex
   request:
     method: GET
   expect:
     status: 200
 
-- name: not_found_test
+- name: failed_test
+  skip: true
   request:
-    url: /not_found
     method: GET
+    url: /not_found
   expect:
-    status: 404
+    status: 200

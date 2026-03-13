@@ -231,13 +231,20 @@ extract:
   token: access_token
 ```
 
-The extraction mechanism depends on the response content type.
+The extraction mechanism depends on the response content type. YATL automatically detects the response format (JSON, XML, or text) based on the `Content-Type` header, and also analyzes the content if the header is missing.
 
 ### JSON Extraction
 
-For JSON responses, you can specify a path (key) in the JSON object. If the path is `null`, the key name is used as the path.
+For JSON responses, you can specify a path (key) in the JSON object. If the path is `null`, the key name is used as the path. Dot notation is supported for extracting nested fields.
 
-Example: If the response is `{"id": 123, "access_token": "abc"}`, the above extraction will store `user_id = 123` and `token = "abc"`.
+Example: If the response is `{"id": 123, "user": {"email": "test@example.com"}}`, you can extract the email as follows:
+
+```yaml
+extract:
+  user_email: user.email
+```
+
+You can also extract array elements using an index (e.g., `items.0.name`).
 
 ### XML Extraction
 
@@ -248,6 +255,8 @@ extract:
   note_to: "/note/to"
 ```
 
+If XPath is not provided (value `null`), the key is used as a tag name.
+
 ### Plain Text Extraction
 
 For plain text, you can use regular expressions:
@@ -256,6 +265,8 @@ For plain text, you can use regular expressions:
 extract:
   match: "\d+"
 ```
+
+If a pattern is not provided, extraction is not performed (explicit pattern is required).
 
 ## Templating with Jinja2
 

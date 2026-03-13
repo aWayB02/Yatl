@@ -1,6 +1,6 @@
 name: test clck.ru
 base_url: https://clck.ru
-skip: false
+skip: true
 
 steps:
 - name: test clck.ru

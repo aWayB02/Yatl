@@ -4,6 +4,7 @@ from .extractor import DataExtractor
 from .render import TemplateRenderer
 import yaml
 from itertools import takewhile
+import concurrent.futures
 
 
 class Runner:
@@ -57,7 +58,7 @@ class Runner:
         with open(yaml_path, "r", encoding="utf-8") as f:
             return yaml.safe_load(f)
 
-    def _is_skipped_test(self, test_spec: dict):
+    def _is_skipped_test(self, test_spec: dict, result_info):
         """Checks if a test is skipped based on the "scip" flag.
 
         Args:
@@ -67,11 +68,11 @@ class Runner:
             True if the test is skipped, False otherwise.
         """
         if test_spec.get("skip", False):
-            print(f"Test {test_spec.get('name', '')} skipped")
+            result_info.append(f"Test {test_spec.get('name', '')} skipped")
             return True
         return False
 
-    def _is_skipped_step(self, step: dict):
+    def _is_skipped_step(self, step: dict, result_info):
         """Checks if a step is skipped based on the "skip" flag.
 
         Args:
@@ -81,7 +82,7 @@ class Runner:
             True if the step is skipped, False otherwise.
         """
         if step.get("skip", False):
-            print(f"Step {step.get('name', '')} skipped")
+            result_info.append(f"Step {step.get('name', '')} skipped")
             return True
         return False
 
@@ -95,24 +96,28 @@ class Runner:
         Args:
             yaml_path: Path to the test YAML file.
         """
+        result_info = []
+        result_info.append("-" * 10)
         test_spec: dict = self._load_test(yaml_path)
         if test_spec is None:
             return
         context = self.create_context(test_spec)
-        if self._is_skipped_test(test_spec):
+        if self._is_skipped_test(test_spec, result_info):
             return
-        print(f"Run test: {test_spec.get('name', '')}")
+        result_info.append(f"Run test: {test_spec.get('name', '')}")
         steps = test_spec.get("steps", [])
         for i, step in enumerate(steps, start=1):
             step: dict
             if step is None:
                 continue
-            if self._is_skipped_step(step):
+            if self._is_skipped_step(step, result_info):
                 continue
-            print(f"Step {i}: {step.get('name', '')}")
+            result_info.append(f"Step {i}: {step.get('name', '')}")
             context = self.step_executor.run_step(step, context)
 
-        print("Test has been completed")
+        result_info.append("-" * 10)
+        for line in result_info:
+            print(line)
 
     def _search_files(self, current_path: str, item: str, files: list):
         """Recursively searches for test files with a .test.yaml/.test.yml suffix.
@@ -136,17 +141,25 @@ class Runner:
                 self._search_files(full_path, i, files)
         return files
 
-    def run_all_tests(self):
+    def run_all_tests(self, max_workers=None):
         """Discovers and runs all test files in the current working directory.
 
         Searches recursively for files ending with .test.yaml or .test.yml,
         executes each one, and prints separators between tests.
+
+        Args:
+            max_workers: Maximum number of threads to use. If None, uses
+                the default of `min(32, os.cpu_count() + 4)`.
         """
-        print("-" * 10)
         files = self._search_files(os.getcwd(), ".", [])
-        for file in files:
-            self.run_test(file)
-            print("-" * 10)
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = {executor.submit(self.run_test, file): file for file in files}
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    print(f"Test {futures[future]} failed with error: {e}")
 
 
 if __name__ == "__main__":
@@ -154,4 +167,4 @@ if __name__ == "__main__":
         DataExtractor(),
         TemplateRenderer(),
     )
-    runner.run_all_tests()
+    runner.run_all_tests(max_workers=10)
